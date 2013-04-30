@@ -2,6 +2,7 @@ import codecs
 import os.path
 import re
 import httplib
+import time
 import urllib
 import urllib2
 import urlparse
@@ -105,14 +106,7 @@ class MemriseImportWidget(QWidget):
 		return title, levelTitles
 		
 	def getLevelNotes(self, levelUrl):
-		soup = BeautifulSoup("")
-		try:
-			response = urllib2.urlopen(levelUrl)
-			soup = BeautifulSoup(response.read())
-		except httplib.BadStatusLine:
-			# not clear why this error occurs (seemingly randomly),
-			# so I regret that all I can do is swallow this exception.
-			pass
+		soup = BeautifulSoup(self.downloadWithRetry(levelUrl, 3))
 		
 		# this looked a lot nicer when I thought I could use BS4 (w/ css selectors)
 		# unfortunately Anki is still packaging BS3 so it's a little rougher
@@ -149,6 +143,18 @@ class MemriseImportWidget(QWidget):
 			importFile.write(note.toText())
 			
 		return importPath
+		
+	def downloadWithRetry(self, url, tryCount):
+		if tryCount <= 0:
+			return ""
+
+		try:
+			return urllib2.urlopen(url).read()
+		except httplib.BadStatusLine:
+			# not clear why this error occurs (seemingly randomly),
+			# so I regret that all we can do is wait and retry.
+			time.sleep(0.1)
+			return self.downloadWithRetry(url, tryCount-1)
 
 	class Note:	
 		def __init__(self, front, back):
