@@ -1,3 +1,5 @@
+﻿# -*- coding: utf-8 -*-
+
 import codecs
 import os.path
 import re
@@ -6,7 +8,7 @@ import time
 import urllib
 import urllib2
 import urlparse
-import uuid
+import Memrise_Course_Importer.uuid
 from anki.importing import TextImporter
 from anki.media import MediaManager
 from aqt import mw
@@ -32,7 +34,6 @@ class MemriseImportWidget(QWidget):
 		
 		patienceLabel = QLabel("Keep in mind that it can take a substantial amount of time to download \nand import your course. Good things come to those who wait!")
 		self.layout.addWidget(patienceLabel)
-		
 		self.importCourseButton = QPushButton("Import course")
 		self.importCourseButton.clicked.connect(self.importCourse)
 		self.layout.addWidget(self.importCourseButton)
@@ -133,7 +134,7 @@ class MemriseImportWidget(QWidget):
 		# The import file is created in the user's media directory (and deleted afterward)
 		# Find where the media directory is and use a UUID for the filename
 		mediaDirectoryPath = MediaManager(mw.col, None).dir()
-		importFilename = uuid.uuid4().hex
+		importFilename = Memrise_Course_Importer.uuid.uuid4().hex
 		importPath = os.path.join(mediaDirectoryPath, importFilename + ".txt")
 		importFile = codecs.open(importPath, 'w', 'utf-8')
 		
@@ -181,7 +182,7 @@ class MemriseImportWidget(QWidget):
 				if side.Type != MemriseImportWidget.TEXT_NOTE:
 					memrisePath = urlparse.urlparse(side.Content).path
 					contentExtension = os.path.splitext(memrisePath)[1]
-					localName = format("%s%s" % (uuid.uuid4(), contentExtension))
+					localName = format("%s%s" % (Memrise_Course_Importer.uuid.uuid4(), contentExtension))
 					fullMediaPath = os.path.join(mediaDirectoryPath, localName)
 					mediaFile = open(fullMediaPath, "wb")
 					mediaFile.write(urllib2.urlopen(side.Content).read())
